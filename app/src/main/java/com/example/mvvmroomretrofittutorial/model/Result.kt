@@ -1,5 +1,7 @@
 package com.example.mvvmroomretrofittutorial.model
 
+
+
 data class Result(
     val _id: String,
     val author: String,

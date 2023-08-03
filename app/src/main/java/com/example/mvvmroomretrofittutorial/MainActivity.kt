@@ -14,6 +14,7 @@ import com.example.mvvmroomretrofittutorial.api.QuotesService
 import com.example.mvvmroomretrofittutorial.api.RetrofitHelper
 import com.example.mvvmroomretrofittutorial.databinding.ActivityMainBinding
 import com.example.mvvmroomretrofittutorial.repo.QuotesRepository
+import com.example.mvvmroomretrofittutorial.utils.QuotesUtils
 import com.example.mvvmroomretrofittutorial.viewmodel.QuotesViewModel
 import com.example.mvvmroomretrofittutorial.viewmodel.QuotesViewModelFactory
 import com.google.android.material.snackbar.Snackbar
@@ -24,8 +25,7 @@ class MainActivity : AppCompatActivity(), ToastBarCallBack {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        val quotesService = RetrofitHelper.getInstance().create(QuotesService::class.java)
-        val repo = QuotesRepository(quotesService)
+        val repo = (application as QuotesApplication).quotesRepository
         viewmodel =
             ViewModelProvider(this, QuotesViewModelFactory(repo)).get(QuotesViewModel::class.java)
         listeners()
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), ToastBarCallBack {
 
     private fun listeners() {
         binding.button.setOnClickListener {
-            if (isConnectedToInternet()) {
+            if (QuotesUtils.isNetworkAvailable(applicationContext)) {
                 viewmodel.fetchQuotesFromService(1)
 
             } else {
@@ -60,19 +60,5 @@ class MainActivity : AppCompatActivity(), ToastBarCallBack {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun isConnectedToInternet(): Boolean {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val networkCapabilities = connectivityManager.activeNetwork ?: return false
-            val actNw =
-                connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
-            actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && actNw.hasCapability(
-                NetworkCapabilities.NET_CAPABILITY_VALIDATED
-            )
-        } else {
-            val activeNetworkInfo = connectivityManager.activeNetworkInfo
-            activeNetworkInfo != null && activeNetworkInfo.isConnected
-        }
-    }
+
 }
