@@ -26,4 +26,13 @@ class QuotesRepository(
             return quotesList as Response<QuotesList>
         }
     }
+
+
+    suspend fun getQuotesInBackGround() {
+        val randomPageNum = (Math.random() * 7).toInt()
+        val result = quotesService.getQuotes(randomPageNum)
+        if (result.body() != null) {
+            quotesDatabase.quotesDao().insertQuotes(result.body()!!.results)
+        }
+    }
 }
